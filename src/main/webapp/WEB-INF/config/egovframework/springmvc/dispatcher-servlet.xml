@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:p="http://www.springframework.org/schema/p"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xmlns:mvc="http://www.springframework.org/schema/mvc"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+                http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+                http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd">
+	
+	<!--  컴포넌트를 스캔해서 자동으로 빈을 등록-->
+    <context:component-scan base-package="egovframework">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Service"/>
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository"/>
+    </context:component-scan>
+	
+	<!-- SpringMVC에서 @RequestMapping 어노테이션으로 매핑된 메서드에 대한 요청을 처리하는 핸들러 어댑터-->
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+        <property name="webBindingInitializer">
+            <bean class="egovframework.example.cmmn.web.EgovBindingInitializer"/>
+        </property>
+    </bean>
+    
+    <!-- 요청 URL을 핸들러 메서드에 매핑하는 역할, 인터셉터가 설정되어 있음 -->
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping">
+        <property name="interceptors">
+            <list>
+                <ref bean="localeChangeInterceptor" />
+            </list>
+        </property>
+    </bean>
+    
+    <!-- 사용자의 로케일(언어 설정)을 세션에 저장하여 애플리케이션의 다국어 지원 가능하게 함 -->
+    <bean id="localeResolver" class="org.springframework.web.servlet.i18n.SessionLocaleResolver" />
+    
+    <!-- 쿠키를 이용한 Locale 이용시 <bean id="localeResolver" class="org.springframework.web.servlet.i18n.CookieLocaleResolver"/> -->
+    
+    <!-- URL파라미터(Language)를 통해 로케일을 변경하는 인터셉터 -->
+    <bean id="localeChangeInterceptor" class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor">
+        <property name="paramName" value="language" />
+    </bean>
+	
+	<!--
+		예외 처리 설정
+		* SimpleMappingExceptionResolver
+		ㄴ 발생한 예외에 따라 뷰를 매핑하는 설정
+		ㄴ 예외 유형에 맞는 에러페이지를 지저해서 사용자에게 적절한 오류 페이지를 보여줄 수 있음
+	-->
+    <bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+        <property name="defaultErrorView" value="cmmn/egovError"/>
+        <property name="exceptionMappings">
+            <props>
+                <prop key="org.springframework.dao.DataAccessException">cmmn/dataAccessFailure</prop>
+                <prop key="org.springframework.transaction.TransactionException">cmmn/transactionFailure</prop>
+                <prop key="org.egovframe.rte.fdl.cmmn.exception.EgovBizException">cmmn/egovError</prop>
+                <prop key="org.springframework.security.AccessDeniedException">cmmn/egovError</prop>
+            </props>
+        </property>
+    </bean>
+	
+	<!-- 
+		뷰 리졸버 설정
+		* UrlBasedViewResolver
+		ㄴ JSP 뷰를 사용하기 위한 뷰 리졸버 설정
+		ㄴ 뷰 이름에 맞는 JSP 파일을 찾기 위해 prefix와 suffix를 설정
+	-->
+    <bean class="org.springframework.web.servlet.view.UrlBasedViewResolver" p:order="1"
+	    p:viewClass="org.springframework.web.servlet.view.JstlView"
+	    p:prefix="/WEB-INF/jsp/egovframework/example/" p:suffix=".jsp"/>
+
+    <!-- For Pagination Tag -->
+    <bean id="imageRenderer" class="egovframework.example.cmmn.web.EgovImgPaginationRenderer"/>
+
+    <bean id="paginationManager" class="org.egovframe.rte.ptl.mvc.tags.ui.pagination.DefaultPaginationManager">
+        <property name="rendererType">
+            <map>
+                <entry key="image" value-ref="imageRenderer"/>
+            </map>
+        </property>
+    </bean>
+	<!-- /For Pagination Tag -->
+	
+	<!--
+		뷰 컨트롤러 설정
+		ㄴ 특정 URL(/cmmn/validator.do)에 대해 정적 뷰를 제공하는 설정
+		ㄴ 요청을 받으면 cmmn/validator.jsp를 반환
+		ㄴ URL과 뷰를 단순히 매핑하는 데 유용
+	-->
+    <mvc:view-controller path="/cmmn/validator.do" view-name="cmmn/validator"/>
+</beans>

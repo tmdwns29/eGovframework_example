@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- MyBatis가 이 파일을 올바르게 해석하도록 도움(DTD 지정) -->
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<!--  MyBatis 설정 파일의 최상위 요소 -->
+<configuration>
+	
+	<!-- Java 클래스에 대해 간단한 별칭 정의 태그 -->
+    <typeAliases>
+		
+		<!-- 별칭을 해당 type 클래스에 매핑 -->
+		<typeAlias alias="egovMap" type="org.egovframe.rte.psl.dataaccess.util.EgovMap"/>
+		<typeAlias alias="searchVO" type="egovframework.example.sample.service.SampleDefaultVO"/>
+		<typeAlias alias="sampleVO" type="egovframework.example.sample.service.SampleVO"/>
+    </typeAliases>
+</configuration>
